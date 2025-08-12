@@ -1,6 +1,10 @@
 from autogen_agentchat.agents import AssistantAgent, CodeExecutorAgent
+from autogen_agentchat.teams import RoundRobinGroupChat
 from autogen_ext.code_executors.docker import DockerCommandLineCodeExecutor 
 from autogen_ext.models.openai import OpenAIChatCompletionClient
+from autogen_agentchat.conditions import TextMentionTermination
+from autogen_agentchat.messages import TextMessage 
+from autogen_agentchat.base import TaskResult
 import asyncio
 import os
 from dotenv import load_dotenv
@@ -28,6 +32,8 @@ async def main():
         If the code execution runs successfully, you can continue.
         Once you the the code execution results that you need to answer,
         you should provide a short summary with the final answer.
+        After that, you should exactly say 'TERMINATE' to end the 
+        conversation
         """,
     )
 
@@ -40,4 +46,23 @@ async def main():
         code_executor=docker_agent,
     )
 
+    team = RoundRobinGroupChat(
+        participants=[developer_agent, executor_agent],
+        name="Developer Team", 
+        termination_condition=TextMentionTermination('TERMINATE'),
+        max_turns=20,
+    )
 
+    await docker_agent.start()
+    task = 'My dataset is "data.csv". What are the columns in this dataset?'
+    async for msg in team.run_stream(task=task):
+        if isinstance(msg, TextMessage):
+            print(f"{msg.source}: {msg.content}")
+        elif isinstance(msg, TaskResult):
+            print(f"Stopping reason: {msg.stop_reason} ")
+        
+    await docker_agent.stop()
+        
+
+if __name__ == "__main__":
+    asyncio.run(main())
