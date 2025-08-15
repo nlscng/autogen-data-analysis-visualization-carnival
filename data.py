@@ -64,16 +64,18 @@ async def orchestrate(team, docker_agent, task):
     task = 'My dataset is "data.csv". What are the columns in this dataset?'
     async for one_msg in team.run_stream(task=task):
         if isinstance(one_msg, TextMessage):
-            print(f"{one_msg.source}: {one_msg.content}")
+            print(message := f"{one_msg.source}: {one_msg.content}")
+            yield message
         elif isinstance(one_msg, TaskResult):
-            print(f"Stopping reason: {one_msg.stop_reason} ")
-        
+            print(message := f"Stopping reason: {one_msg.stop_reason} ")
+            yield message
     await docker_agent.stop()
         
 async def main() -> None:
     task = "My dataset is 'data.csv'. What are the columns in this dataset?"
     team, docker_agent = await get_team_config()
-    await orchestrate(team, docker_agent, task)
+    async for one_msg in orchestrate(team, docker_agent, task):
+        pass
 
 if __name__ == "__main__":
     asyncio.run(main())
