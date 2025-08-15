@@ -12,8 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 api_key_name = "OPENAI_API_KEY"
 
-
-async def main():
+async def get_team_config():
     model = OpenAIChatCompletionClient(model="gpt-4o", api_key=os.getenv(api_key_name))
 
     developer_agent = AssistantAgent(
@@ -57,17 +56,24 @@ async def main():
         termination_condition=TextMentionTermination('TERMINATE'),
         max_turns=20,
     )
+    return team, docker_agent
+    
 
+async def orchestrate(team, docker_agent, task):
     await docker_agent.start()
     task = 'My dataset is "data.csv". What are the columns in this dataset?'
-    async for msg in team.run_stream(task=task):
-        if isinstance(msg, TextMessage):
-            print(f"{msg.source}: {msg.content}")
-        elif isinstance(msg, TaskResult):
-            print(f"Stopping reason: {msg.stop_reason} ")
+    async for one_msg in team.run_stream(task=task):
+        if isinstance(one_msg, TextMessage):
+            print(f"{one_msg.source}: {one_msg.content}")
+        elif isinstance(one_msg, TaskResult):
+            print(f"Stopping reason: {one_msg.stop_reason} ")
         
     await docker_agent.stop()
         
+async def main() -> None:
+    task = "My dataset is 'data.csv'. What are the columns in this dataset?"
+    team, docker_agent = await get_team_config()
+    await orchestrate(team, docker_agent, task)
 
 if __name__ == "__main__":
     asyncio.run(main())
