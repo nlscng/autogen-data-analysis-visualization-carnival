@@ -19,7 +19,8 @@ async def get_team_config():
         name="Developer",
         model_client=model,
         system_message="""You are a coding developer agent. You will
-        be given a csv file and be asked a few questions about it. 
+        be given a csv file named 'data.csv' in your working directory, 
+        and be asked a few questions about it. 
         You can develop python code to analyze the csv file and answer
         the questions. You should always begin with your plan to answer the question.
         Then you should always write the code in a code bock
