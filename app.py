@@ -9,7 +9,7 @@ file = st.file_uploader("Upload your CSV file", type=["csv"])
 
 if file is not None:
     # Save the uploaded file to a temporary location
-    with open(os.path.join("temp", "data.csv", "wb")) as f:
+    with open(os.path.join("temp", "data.csv"), "wb") as f:
         f.write(file.getbuffer())
     st.success("File uploaded successfully!")
 
@@ -22,13 +22,17 @@ chat_container = st.container()
 if prompt:
     async def query():
         team, docker_agent = await get_team_config()
-        async for one_msg in orchestrate(team, docker_agent, prompt):
-            if one_msg.startswith("Developer"):
-                with st.chat_message("ai"):
-                    st.markdown(one_msg)
-            elif one_msg.startswith("CodeExecutor"):
-                with st.chat_message("CodeExecutor"):
-                    st.markdown(one_msg)
+        with st.spinner("Generating response..."):
+            async for one_msg in orchestrate(team, docker_agent, prompt):
+                if one_msg.startswith("Developer"):
+                    with st.chat_message("ai"):
+                        st.markdown(one_msg)
+                elif one_msg.startswith("CodeExecutor"):
+                    with st.chat_message("CodeExecutor"):
+                        st.markdown(one_msg)
+                elif one_msg.startswith("Stopping reason"):
+                    with st.chat_message("user"):
+                        st.markdown(one_msg)
                 
     asyncio.run(query())        
     # with chat_container:
