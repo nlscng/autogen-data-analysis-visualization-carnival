@@ -43,7 +43,8 @@ async def get_team_config():
     )
 
     docker_agent= DockerCommandLineCodeExecutor(
-        work_dir="temp"
+        work_dir="temp",
+        image='amancevice/pandas:latest',
     )
 
     executor_agent = CodeExecutorAgent(
@@ -61,8 +62,8 @@ async def get_team_config():
     
 
 async def orchestrate(team, docker_agent, task):
+    assert task is not None
     await docker_agent.start()
-    task = 'My dataset is "data.csv". What are the columns in this dataset?'
     async for one_msg in team.run_stream(task=task):
         if isinstance(one_msg, TextMessage):
             print(message := f"{one_msg.source}: {one_msg.content}")
