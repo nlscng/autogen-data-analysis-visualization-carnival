@@ -44,6 +44,7 @@ if prompt:
             async for one_msg in orchestrate(team, docker_agent, prompt):
                 st.session_state.messages.append(one_msg)
                 show_message(chat_container, one_msg)
+                st.session_state['team_state'] = team.save_state()
                 
     asyncio.run(query())        
     # with chat_container:
