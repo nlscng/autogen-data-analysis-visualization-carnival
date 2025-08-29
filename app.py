@@ -2,6 +2,7 @@ import streamlit as st
 from data import get_team_config, orchestrate
 import asyncio
 import os
+import re
 
 def show_message(container, one_msg):
     with container:
@@ -14,6 +15,15 @@ def show_message(container, one_msg):
         elif one_msg.startswith("Stopping reason"):
             with st.chat_message("user"):
                 st.markdown(one_msg)
+        
+        if filename := get_filename(one_msg):
+            st.image(os.path.join("temp", filename), caption=filename)
+
+def get_filename(message: str) -> str | None:
+    match = re.search(r'GENERATED:([^\s]+\.png)', message)
+    if match:
+        return match.group(1)
+    return None
 
 st.title("Talk with your dataset")
 

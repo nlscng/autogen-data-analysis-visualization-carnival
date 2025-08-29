@@ -35,6 +35,10 @@ async def get_team_config():
         Use pandas to answer questions if possible. If a library is needed, 
         use uv or pip to install it in a shell code block (with sh specified) to
         install it.
+        If the user asks you for a plot, you should use matplotlib to plot it, 
+        and you should save it as a png file, and you should exactly say 'GENERATED:<filename>',
+        (like 'GENERATED:plot.png') on a new line after you are sure that the code executor has 
+        executed the code succesfully and generated the plot file correctly.
         Once you the the code execution results that you need to answer,
         you should provide a short summary with the final answer.
         After that, you should exactly say 'TERMINATE' to end the 
