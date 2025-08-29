@@ -40,16 +40,16 @@ for one_msg in st.session_state['messages']:
 if prompt:
     async def query():
         team, docker_agent = await get_team_config()
+        # check if there's a saved state for the team, load it if exists
+        if 'team_state' in st.session_state:
+            await team.load_state(st.session_state['team_state'])
+
         with st.spinner("Generating response..."):
             async for one_msg in orchestrate(team, docker_agent, prompt):
                 st.session_state.messages.append(one_msg)
                 show_message(chat_container, one_msg)
-                st.session_state['team_state'] = team.save_state()
+                
+                # get team's save state and store it in session state
+                st.session_state['team_state'] = await team.save_state()
                 
     asyncio.run(query())        
-    # with chat_container:
-    #     st.write(f"You asked: {prompt}")
-        # Here you would typically call the main function from data.py
-        # and display the response. For now, we will just simulate a response.
-        # response = "The columns in your dataset are: ['column1', 'column2', 'column3']"
-        # st.write(f"Assistant: {response}")
